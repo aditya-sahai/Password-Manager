@@ -33,10 +33,15 @@ class Interface(PasswordCryptography):
             if user_need == "q":
                 exit()
 
-            else:
-                service = input("\nEnter the website/app of the password\n>>>")
-                if service.lower().strip() == "q":
-                    exit()
+            if not user_need.isdigit():
+                print("\nCould Not Understand.")
+                print("Please Try Again.")
+                self.main()
+                exit()
+
+            service = input("\nEnter the website/app of the password\n>>>")
+            if service.lower().strip() == "q":
+                exit()
 
             if user_need == "1":
                 duplicate_status = self.check_duplicate_service(service)
