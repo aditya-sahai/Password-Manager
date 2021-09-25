@@ -1,12 +1,12 @@
 import getpass
 from hashlib import md5
+from cryptography.fernet import Fernet
 
 from random import choice
-
 import json
 
 
-class Login:
+class UserManager:
     CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
     def __init__(self):
@@ -25,12 +25,14 @@ class Login:
         username = md5(username.encode("UTF-8")).hexdigest()
         username_match = False
         password_match = False
+        user_index = None
 
-        for user in self.users:
+        for i, user in enumerate(self.users):
             if user["username"] == username:
                 username_match = True
+                user_index = i
 
-                for char in Login.CHARS:
+                for char in UserManager.CHARS:
                     secure_password = f"{user['salt']}{password}{char}"
                     hashed_password = md5(secure_password.encode("UTF-8")).hexdigest()
 
@@ -41,6 +43,7 @@ class Login:
         return {
             "username-match": username_match,
             "password-match": password_match,
+            "user-index": user_index,
         }
 
     def get_new_user_info(self):
@@ -79,7 +82,7 @@ class Login:
         salt = ""
 
         for _ in range(16):
-            salt += choice(Login.CHARS)
+            salt += choice(UserManager.CHARS)
 
         return salt
 
@@ -93,7 +96,7 @@ class Login:
         password = user_info["password"]
 
         salt = self.gen_salt()
-        secure_password = f"{salt}{password}{choice(string.ascii_letters)}"
+        secure_password = f"{salt}{password}{choice(UserManager.CHARS)}"
 
         hashed_password = md5(secure_password.encode("UTF-8")).hexdigest()
         hashed_username = md5(username.encode("UTF-8")).hexdigest()
@@ -101,14 +104,16 @@ class Login:
         user_data = {
             "username": hashed_username,
             "password": hashed_password,
-            "salt": salt
+            "salt": salt,
+            "key": Fernet.generate_key().decode(),
+            "passwords": [],
         }
 
         with open(self.USERS_FILE_NAME, "w") as users_f:
             self.users.append(user_data)
             json.dump(self.users, users_f, indent=4)
 
-    def login(self):
+    def sign_in(self):
         """
         Asks for username and password and checks if credentials are valid.
         """
@@ -119,7 +124,19 @@ class Login:
         credentials_validity = self.check_user_credentials(username, password)
         return credentials_validity["username-match"] and credentials_validity["password-match"]
 
+    def delete_account(self, username, password):
+        """
+        Checks if password entered by user for confirmation matches and then deletes account.
+        """
+        credentials_validity_user_info = self.check_user_credentials(username, password)
+
+        if credentials_validity_user_info["username-match"] and credentials_validity_user_info["password-match"]:
+            del self.users[credentials_validity_user_info["user-index"]]
+
+        with open(self.USERS_FILE_NAME, "w") as users_f:
+            json.dump(self.users, users_f, indent=4)
+
 
 if __name__ == "__main__":
-    LoginObject = Login()
-    print(LoginObject.login())
+    Manager = UserManager()
+    print(Manager.delete_account("aditya", "hyper@$$"))
