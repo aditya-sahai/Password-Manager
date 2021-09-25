@@ -46,35 +46,6 @@ class UserManager:
             "user-index": user_index,
         }
 
-    def get_new_user_info(self):
-        """
-        Asks user for username, password and confirms password.
-        """
-        while True:
-            username = input("\nUsername: ").strip().lower()
-
-            if not self.check_user_credentials(username, None)["username-match"]:
-                break
-            else:
-                print("User With That Username Already Exists! Please enter a different username.")
-
-        print()
-
-        while True:
-            password = getpass.getpass(prompt="Password: ")
-            confirm_password = getpass.getpass(prompt="Confirm Password: ")
-
-            if password == confirm_password:
-                break
-
-            else:
-                print("\nPassword Do Not Match! Try Again!\n")
-
-        return {
-            "username": username,
-            "password": password
-        }
-
     def gen_salt(self):
         """
         Generates 16 char long salt.
@@ -86,15 +57,11 @@ class UserManager:
 
         return salt
 
-    def sign_up(self):
+    def sign_up(self, username, password):
         """
         Asks for username password ans asks user to confirm password.
         Adds salt and pepper to password and returns md5 hash.
         """
-        user_info = self.get_new_user_info()
-        username = user_info["username"]
-        password = user_info["password"]
-
         salt = self.gen_salt()
         secure_password = f"{salt}{password}{choice(UserManager.CHARS)}"
 
@@ -113,17 +80,6 @@ class UserManager:
             self.users.append(user_data)
             json.dump(self.users, users_f, indent=4)
 
-    def sign_in(self):
-        """
-        Asks for username and password and checks if credentials are valid.
-        """
-        username = input("\nUsername: ").strip().lower()
-        print()
-        password = getpass.getpass(prompt="Password: ")
-
-        credentials_validity = self.check_user_credentials(username, password)
-        return credentials_validity["username-match"] and credentials_validity["password-match"]
-
     def delete_account(self, username, password):
         """
         Checks if password entered by user for confirmation matches and then deletes account.
@@ -136,7 +92,20 @@ class UserManager:
         with open(self.USERS_FILE_NAME, "w") as users_f:
             json.dump(self.users, users_f, indent=4)
 
+    def change_password(self, username, old_password, new_password):
+        """
+        Changes the password of a user.
+        """
+        index = self.check_user_credentials(username, old_password)["user-index"]
+        salt = self.gen_salt()
+        secure_password = f"{salt}{new_password}{choice(UserManager.CHARS)}"
+        hashed_password = md5(secure_password.encode("UTF-8")).hexdigest()
+        self.users[index]["password"] = hashed_password
+        self.users[index]["salt"] = salt
+
+        with open(self.USERS_FILE_NAME, "w") as users_f:
+            json.dump(self.users, users_f, indent=4)
+
 
 if __name__ == "__main__":
     Manager = UserManager()
-    print(Manager.delete_account("aditya", "hyper@$$"))
