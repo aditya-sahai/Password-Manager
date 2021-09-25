@@ -14,6 +14,7 @@ class UserManager:
         Would have methods to accept credentials from user and check if they are valid or not.
         """
         self.USERS_FILE_NAME = "users.json"
+        self.PASSWORDS_FILE_NAME = "passwords.json"
 
         with open(self.USERS_FILE_NAME, "r") as users_f:
             self.users = json.load(users_f)
@@ -27,10 +28,10 @@ class UserManager:
         password_match = False
         user_index = None
 
-        for i, user in enumerate(self.users):
+        for index, user in enumerate(self.users):
             if user["username"] == username:
                 username_match = True
-                user_index = i
+                user_index = index
 
                 for char in UserManager.CHARS:
                     secure_password = f"{user['salt']}{password}{char}"
@@ -72,13 +73,17 @@ class UserManager:
             "username": hashed_username,
             "password": hashed_password,
             "salt": salt,
-            "key": Fernet.generate_key().decode(),
-            "passwords": [],
         }
 
         with open(self.USERS_FILE_NAME, "w") as users_f:
             self.users.append(user_data)
             json.dump(self.users, users_f, indent=4)
+
+        with open(self.PASSWORDS_FILE_NAME, "r+") as passwords_f:
+            passwords = json.load(passwords_f)
+            passwords_f.seek(0)
+            passwords.append({"username": hashed_username, "passwords": []})
+            json.dump(passwords, passwords_f, indent=4)
 
     def delete_account(self, username, password):
         """

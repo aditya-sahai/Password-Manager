@@ -1,4 +1,5 @@
 from UserManager import UserManager
+from PasswordManager import PasswordManager
 from InputMethods import InputMethods
 
 
@@ -6,26 +7,12 @@ Manager = UserManager()
 InputManager = InputMethods()
 
 print("\nEnter 'q' when asked for option number to quit.")
-print("\n1. Sign Up")
-print("2. Sign In")
+print("\n1. Sign In")
+print("2. Sign Up")
 signup_or_signin = input("\nEnter Option Number\n>>> ").strip()
 user_signed_in = False
 
 if signup_or_signin == "1":
-    while True:
-        username = input("\nUsername\n>>> ").strip().lower()
-
-        if not Manager.check_user_credentials(username, None)["username-match"]:
-            break
-        else:
-            print("\nUser with that username already exsits. Please enter a different username.")
-
-    password = InputManager.confirm_pwd_input()
-    Manager.sign_up(username, password)
-    print(f"\nAccount With username, '{username}' created succesfully!")
-    user_signed_in = True
-
-elif signup_or_signin == "2":
     user_input_data = InputManager.username_pwd_input()
     username = user_input_data["username"]
     password = user_input_data["password"]
@@ -39,6 +26,20 @@ elif signup_or_signin == "2":
     else:
         print("\nInvalid Username/Password.")
 
+elif signup_or_signin == "2":
+    while True:
+        username = input("\nUsername\n>>> ").strip().lower()
+
+        if not Manager.check_user_credentials(username, None)["username-match"]:
+            break
+        else:
+            print("\nUser with that username already exsits. Please enter a different username.")
+
+    password = InputManager.confirm_pwd_input()
+    Manager.sign_up(username, password)
+    print(f"\nAccount With username, '{username}' created succesfully!")
+    user_signed_in = True
+
 elif signup_or_signin == "q":
     exit()
 
@@ -46,6 +47,8 @@ else:
     print("\nSorry. Could not understand.")
 
 if user_signed_in:
+    PasswordProcessor = PasswordManager(username)
+
     print("\n1. View Saved Password")
     print("2. Write New Password")
     print("3. Edit Old Password")
@@ -58,10 +61,12 @@ if user_signed_in:
         pass
 
     elif option == "2":
-        pass
+        password_info = InputManager.app_password_input(True, True)
+        PasswordProcessor.write_new_password(password_info["app"], password_info["password"])
 
     elif option == "3":
-        pass
+        password_info = InputManager.app_password_input(True, True)
+        PasswordProcessor.update_saved_password(password_info["app"], password_info["password"])
 
     elif option == "4":
         pass
