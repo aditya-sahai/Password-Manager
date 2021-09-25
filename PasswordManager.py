@@ -103,3 +103,65 @@ class PasswordManager:
 
         with open(self.PASSWORDS_FILE_NAME, "w") as passwords_f:
             json.dump(self.passwords, passwords_f, indent=4)
+
+    def view_password(self, app):
+        """
+        Prints plain text password.
+        """
+        password_index = self.find_app(app)
+
+        if password_index != None:
+            decryptor = Fernet(self.passwords[self.user_index]["passwords"][password_index]["key"].encode("UTF-8"))
+
+            password = decryptor.decrypt(self.passwords[self.user_index]["passwords"][password_index]["password"].encode("UTF-8")).decode("UTF-8")
+            print(f"\nPassword for {app}: {password}")
+
+        else:
+            print(f"\nYou dont have any password saved for the app named '{app}'.")
+            print(f"\nWould You like to write a new password for '{app}'?\n1.Yes\n2.No")
+            option = input("\nEnter Option Number\n>>> ").strip()
+
+            if option == "1":
+                InputManager = InputMethods()
+                password_info = InputManager.app_password_input(False, True)
+                self.write_new_password(app, password_info["password"])
+                return
+
+            elif option == "2":
+                exit()
+
+    def delete_password(self, app):
+        """
+        Deletes the password of the app.
+        """
+        password_index = self.find_app(app)
+
+        if password_index != None:
+            del self.passwords[self.user_index]["passwords"][password_index]
+            print(f"\nPassword for '{app}' deleted successfully.")
+
+        else:
+            print(f"\nYou dont have any password saved for the app named '{app}'.")
+            print(f"\nWould You like to write a new password for '{app}'?\n1.Yes\n2.No")
+            option = input("\nEnter Option Number\n>>> ").strip()
+
+            if option == "1":
+                InputManager = InputMethods()
+                password_info = InputManager.app_password_input(False, True)
+                self.write_new_password(app, password_info["password"])
+                return
+
+            elif option == "2":
+                exit()
+
+        with open(self.PASSWORDS_FILE_NAME, "w") as passwords_f:
+            json.dump(self.passwords, passwords_f, indent=4)
+
+    def delete_all_user_passwords(self):
+        """
+        Called when user deletes account to remove passwords from passwords.json
+        """
+        del self.passwords[self.user_index]
+
+        with open(self.PASSWORDS_FILE_NAME, "w") as passwords_f:
+            json.dump(self.passwords, passwords_f, indent=4)

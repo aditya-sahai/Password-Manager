@@ -2,6 +2,8 @@ from UserManager import UserManager
 from PasswordManager import PasswordManager
 from InputMethods import InputMethods
 
+import getpass
+
 
 Manager = UserManager()
 InputManager = InputMethods()
@@ -58,7 +60,8 @@ if user_signed_in:
     option = input("\nEnter Option Number\n>>> ").strip()
 
     if option == "1":
-        pass
+        password_info = InputManager.app_password_input(True, False)
+        PasswordProcessor.view_password(password_info["app"])
 
     elif option == "2":
         password_info = InputManager.app_password_input(True, True)
@@ -69,19 +72,20 @@ if user_signed_in:
         PasswordProcessor.update_saved_password(password_info["app"], password_info["password"])
 
     elif option == "4":
-        pass
+        password_info = InputManager.app_password_input(True, False)
+        PasswordProcessor.delete_password(password_info["app"])
 
     elif option == "5":
-        # Change Password Option
         new_password = InputManager.confirm_pwd_input()
         Manager.change_password(username, password, new_password)
         print("\nPassword changed succesfully!")
 
     elif option == "6":
-        # Delete Account Option
-        confirmation = getpass.getpass(prompt="\nPress any key to confirm. Press q to cancel").lower().strip()
+        confirmation = getpass.getpass(prompt="\nPress any key to confirm. Press q to cancel.").lower().strip()
         if confirmation != "q":
             Manager.delete_account(username, password)
+            PasswordProcessor.delete_all_user_passwords()
+
         print("\nAccount deleted succesfully!")
 
     elif option == "q":
