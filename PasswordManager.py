@@ -65,9 +65,6 @@ class PasswordManager:
                 self.update_saved_password(app, password_info["password"])
                 return
 
-            elif option == "2":
-                exit()
-
         else:
             self.passwords[self.user_index]["passwords"].append(new_password_data)
             with open(self.PASSWORDS_FILE_NAME, "w") as passwords_f:
@@ -98,9 +95,6 @@ class PasswordManager:
                 self.write_new_password(app, password_info["password"])
                 return
 
-            elif option == "2":
-                exit()
-
         with open(self.PASSWORDS_FILE_NAME, "w") as passwords_f:
             json.dump(self.passwords, passwords_f, indent=4)
 
@@ -127,9 +121,6 @@ class PasswordManager:
                 self.write_new_password(app, password_info["password"])
                 return
 
-            elif option == "2":
-                exit()
-
     def delete_password(self, app):
         """
         Deletes the password of the app.
@@ -150,9 +141,6 @@ class PasswordManager:
                 password_info = InputManager.app_password_input(False, True)
                 self.write_new_password(app, password_info["password"])
                 return
-
-            elif option == "2":
-                exit()
 
         with open(self.PASSWORDS_FILE_NAME, "w") as passwords_f:
             json.dump(self.passwords, passwords_f, indent=4)
